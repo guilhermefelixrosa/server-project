@@ -7,18 +7,20 @@ const path = require('path'); // Usaremos para servir o build do React
 
 // --- Configuração Inicial ---
 const app = express();
-const port = 5000;
-const MONGO_URI = 'mongodb://localhost:27017/excel-data-db'; // Verifique se este é o nome do seu banco
+// const port = 5000;
+// const MONGO_URI = 'mongodb://localhost:27017/excel-data-db'; // Verifique se este é o nome do seu banco
+
+const port = process.env.PORT || 5000; // 1. USAR A PORTA DO RENDER
+const MONGO_URI = process.env.MONGO_URI; // 2. USAR A URI DO ATLAS
 
 // --- Middlewares Essenciais ---
-app.use(cors()); // Permite requisições de outras origens (ex: seu app React)
-app.use(express.json()); // Permite que o Express entenda JSON no body das requisições
+app.use(cors({
+  origin: process.env.FRONTEND_URL // 3. Permitir CORS do seu frontend
+}));
+app.use(express.json());
 
 // --- Conexão com o MongoDB ---
-mongoose.connect(MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(MONGO_URI) // 4. Usar a variável
 .then(() => console.log('MongoDB conectado com sucesso.'))
 .catch(err => console.error('Erro ao conectar ao MongoDB:', err));
 
