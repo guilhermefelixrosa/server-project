@@ -1,0 +1,239 @@
+/* --- Reset Básico e Tema Café --- */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: #F5F5DC; /* Um bege claro, como espuma de latte */
+  color: #333;
+  margin: 0;
+  padding: 20px;
+}
+
+/* --- Layout Principal (App.js) --- */
+.App {
+  max-width: 900px;
+  margin: 0 auto;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.App-header {
+  background-color: #6F4E37; /* Cor de grão de café torrado */
+  color: white;
+  padding: 20px 30px;
+  border-bottom: 4px solid #A67B5B; /* Um marrom mais claro, como um café com leite */
+}
+
+.App-header h1 {
+  margin: 0;
+  font-size: 1.8em;
+}
+
+.App-main {
+  padding: 20px 30px;
+}
+
+hr {
+  border: 0;
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 30px 0;
+}
+
+/* --- Estilos dos Componentes (h2, botões) --- */
+h2 {
+  color: #4E342E; /* Marrom escuro */
+  border-bottom: 2px solid #F5F5DC;
+  padding-bottom: 10px;
+  margin-top: 0;
+}
+
+button {
+  background-color: #6F4E37; /* Cor primária de café */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #5E3C2B; /* Um pouco mais escuro no hover */
+}
+
+/* --- FileUpload Component --- */
+.upload-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Estilizando o input de arquivo (a parte mais chata) */
+input[type="file"] {
+  color: #4E342E;
+}
+
+input[type="file"]::file-selector-button {
+  background-color: #A67B5B; /* Cor de café com leite */
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: background-color 0.2s ease;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background-color: #8C6A4E;
+}
+
+/* Mensagem de status (sucesso ou erro) */
+.upload-status {
+  margin-top: 10px;
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+/* --- DataViewer Component --- */
+.dataviewer-container {
+  overflow-x: auto; /* Garante que a tabela seja responsiva em telas pequenas */
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+thead tr {
+  background-color: #6F4E37; /* Cabeçalho da tabela com cor de café */
+  color: white;
+  text-align: left;
+}
+
+th, td {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+}
+
+tbody tr:nth-of-type(even) {
+  background-color: #F8F8F8; /* Linhas alternadas (zebra) */
+}
+
+tbody tr:hover {
+  background-color: #F5F5DC; /* Destaque no hover */
+}
+
+/* Botão de Excluir */
+.btn-delete {
+  background-color: #c94c4c; /* Um tom de vermelho para perigo */
+  padding: 5px 10px;
+  font-size: 0.9em;
+}
+
+.btn-delete:hover {
+  background-color: #a93232;
+}
+
+.search-input {
+  width: 100%; /* Ocupa a largura total */
+  padding: 10px 12px;
+  margin-bottom: 20px; /* Espaço entre a busca e a tabela */
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box; /* Isso garante que o padding não quebre o layout */
+  background-color: #FAFAFA;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #6F4E37; /* Cor de café ao focar */
+  box-shadow: 0 0 5px rgba(111, 78, 55, 0.3);
+}
+
+.App-nav {
+  display: flex;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.App-nav a {
+  color: #f0e6dd; /* Cor creme/branca para os links */
+  text-decoration: none;
+  font-weight: 500;
+  padding: 5px 0;
+  border-bottom: 2px solid transparent;
+  transition: border-bottom 0.2s;
+}
+
+.App-nav a:hover,
+.App-nav a.active { /* O React Router adiciona a classe 'active' automaticamente */
+  border-bottom: 2px solid #fff;
+}
+
+/* ... (todos os estilos anteriores) ... */
+
+/* --- Estilos do Formulário de Adicionar Contato --- */
+.add-form-container {
+  background-color: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.add-form-container h2 {
+  margin-top: 0;
+  border: none;
+  padding: 0;
+  margin-bottom: 15px;
+}
+
+.add-form-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+}
+
+.form-group {
+  flex: 1; /* Faz com que os grupos de formulário dividam o espaço */
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #5E3C2B; /* Marrom do tema */
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"] {
+  padding: 10px;
+  font-size: 0.95em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #6F4E37; /* Cor de café ao focar */
+  box-shadow: 0 0 5px rgba(111, 78, 55, 0.3);
+}
+
+.add-form-container button[type="submit"] {
+  align-self: flex-start; /* Alinha o botão à esquerda */
+}
