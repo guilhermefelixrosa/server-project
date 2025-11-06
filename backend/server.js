@@ -29,29 +29,25 @@ mongoose.connect(MONGO_URI) // 4. Usar a variável
 // 1. Schema para os dados do Excel (vai para a coleção 'datas')
 const dataSchema = new mongoose.Schema({
   Nome: String,
-  Email: String,
-  Telefone: String,
-  // Adicione aqui quaisquer outros campos que seu Excel possa ter
-  // Se os campos variarem, você pode usar a opção strict: false
-}, { strict: false }); // strict: false permite campos não definidos no schema
-
-const DataModel = mongoose.model('Data', dataSchema); // O Mongoose usará a coleção 'datas'
-
-// 2. Schema para a 'basecontatos' (vai para a coleção 'basecontatos')
-// !!! IMPORTANTE: Ajuste os campos abaixo para corresponderem à sua coleção 'basecontatos'
-const contatoSchema = new mongoose.Schema({
-  nome: String,
-  telefone: String,
   email: String,
-  empresa: String
-  // Adicione os campos que existem na sua coleção
+  password: String, // Senha em texto puro
+  manager: String
+}, { strict: false });
+
+const DataModel = mongoose.model('Data', dataSchema);
+
+// 2. Schema para a 'basecontatos'
+const contatoSchema = new mongoose.Schema({
+  Nome: String,
+  email: String,
+  password: String, // Senha em texto puro
+  manager: String
 }, { 
-  collection: 'basecontatos', // Força o Mongoose a usar este nome de coleção
-  strict: false // Permite campos extras, caso a coleção não seja uniforme
+  collection: 'basecontatos', 
+  strict: false 
 });
 
 const ContatoModel = mongoose.model('Contato', contatoSchema);
-
 
 // --- Configuração do Multer (Upload) ---
 // Usando armazenamento em memória para processar o arquivo sem salvar no disco
@@ -60,7 +56,8 @@ const upload = multer({ storage: storage });
 
 // --- ROTAS DA API ---
 
-// 1. Rota para UPLOAD DE ARQUIVO
+// 1. Rota para UPLOAD DE ARQUIVO (SIMPLIFICADA)
+// (Removemos a lógica de hash)
 app.post('/api/upload', upload.single('file'), async (req, res) => {
   console.log('Recebida requisição /api/upload');
   if (!req.file) {
@@ -71,13 +68,13 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
-    const data = xlsx.utils.sheet_to_json(worksheet);
+    const data = xlsx.utils.sheet_to_json(worksheet); // Lê os dados como estão
 
     if (data.length === 0) {
       return res.status(400).send({ message: 'O arquivo Excel está vazio ou mal formatado.' });
     }
 
-    // Insere os dados no MongoDB na coleção 'datas'
+    // Insere os dados diretamente (com senha em texto puro)
     const result = await DataModel.insertMany(data);
     
     console.log(`Sucesso: ${result.length} linhas inseridas na coleção 'datas'`);
@@ -159,20 +156,27 @@ app.delete('/api/contatos/:id', async (req, res) => {
 
 // ... (todo o seu código existente, app.get('/api/contatos') e app.delete('/api/contatos/:id'))
 
-// 6. Rota para CRIAR um novo registro na 'basecontatos'
+// 6. Rota para CRIAR um novo registro na 'basecontatos' (SIMPLIFICADA)
+// (Removemos a lógica de hash)
 app.post('/api/contatos', async (req, res) => {
   console.log('Recebida requisição POST /api/contatos', req.body);
   try {
-    // req.body conterá os dados do formulário (ex: { nome: 'Novo Contato', ... })
-    // IMPORTANTE: Isso assume que seu ContatoModel tem os campos 'nome', 'email', 'telefone', 'empresa'
-    // Se os campos do seu formulário forem diferentes, o Modelo os salvará
-    // desde que tenhamos { strict: false } no schema (o que fizemos antes).
-    const novoContato = new ContatoModel(req.body);
+    const { Nome, email, password, manager } = req.body;
+
+    // Validação de campos obrigatórios
+    if (!Nome || !email || !password) {
+      return res.status(400).send({ message: 'Nome, email e password são obrigatórios.' });
+    }
+
+    const novoContato = new ContatoModel({
+      Nome,
+      email,
+      password, // Salva a senha em texto puro
+      manager
+    });
     
-    // Salva o novo contato no banco de dados
     const contatoSalvo = await novoContato.save();
     
-    // Retorna o contato salvo com o status 201 (Created)
     res.status(201).json(contatoSalvo);
 
   } catch (error) {

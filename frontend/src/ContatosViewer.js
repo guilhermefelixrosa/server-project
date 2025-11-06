@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+
+// API URL (do Render ou localhost)
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-// ESTADO INICIAL DO FORMULÁRIO
-// !! IMPORTANTE !!
-// Ajuste os campos aqui para que correspondam EXATAMENTE aos campos
-// que você definiu no seu contatoSchema no server.js
+// ESTADO INICIAL DO FORMULÁRIO (ATUALIZADO)
 const initialFormState = {
-  nome: '',
+  Nome: '',
   email: '',
-  telefone: '',
-  empresa: ''
+  password: '',
+  manager: ''
 };
 
 function ContatosViewer() {
@@ -19,8 +18,6 @@ function ContatosViewer() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  // --- NOVO ESTADO PARA O FORMULÁRIO DE ADIÇÃO ---
   const [newContato, setNewContato] = useState(initialFormState);
 
   useEffect(() => {
@@ -38,9 +35,9 @@ function ContatosViewer() {
     };
 
     fetchData();
-  }, [refreshTrigger]); // Atualiza quando refreshTrigger muda
+  }, [refreshTrigger]); 
 
-  // --- NOVA FUNÇÃO: Lida com mudanças nos inputs do formulário ---
+  // Função para lidar com mudanças no formulário
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setNewContato(prevState => ({
@@ -49,46 +46,40 @@ function ContatosViewer() {
     }));
   };
 
-  // --- NOVA FUNÇÃO: Lida com o envio do formulário ---
+  // Função de envio do formulário
   const handleAddSubmit = async (e) => {
-    e.preventDefault(); // Impede o recarregamento da página
+    e.preventDefault(); 
     
-    // Validação simples
-    if (!newContato.nome || !newContato.email) {
-      alert('Por favor, preencha pelo menos nome e email.');
+    // Validação ATUALIZADA
+    if (!newContato.Nome || !newContato.email || !newContato.password) {
+      alert('Por favor, preencha Nome, email e password.');
       return;
     }
     
     try {
-      // Envia os dados do formulário para o backend
       await axios.post(`${API_URL}/api/contatos`, newContato);
-      
-      // Limpa o formulário
       setNewContato(initialFormState);
-      
-      // Força a atualização da lista (recarrega os dados)
       setRefreshTrigger(prev => prev + 1); 
-      
     } catch (err) {
       console.error('Erro ao adicionar contato:', err);
       alert('Não foi possível adicionar o contato.');
     }
   };
 
-  // --- FUNÇÃO DE DELETAR (Já existia, sem mudanças) ---
+  // Função de deletar
   const handleDelete = async (id) => {
     if (window.confirm('Tem certeza que deseja excluir este contato?')) {
       try {
         await axios.delete(`${API_URL}/api/contatos/${id}`);
         setRefreshTrigger(prev => prev + 1); 
       } catch (err) {
-        console.error('Erro ao deletar contato:', err);
-        alert('Não foi possível excluir o contato.');
+        console.error('Erro ao deletar registro:', err);
+        alert('Não foi possível excluir o registro.');
       }
     }
   };
 
-  // Lógica de filtro (Já existia, sem mudanças)
+  // Lógica de filtro
   const filteredData = contatos.filter((contato) => {
     return Object.values(contato).some(value => 
       String(value).toLowerCase().includes(searchTerm.toLowerCase())
@@ -98,20 +89,21 @@ function ContatosViewer() {
   if (loading) return <p>Carregando contatos...</p>;
   if (error) return <p>{error}</p>;
 
+  // Detecta cabeçalhos dinamicamente
   const headers = contatos.length > 0 ? Object.keys(contatos[0]) : [];
   const filteredHeaders = headers.filter(h => h !== '_id' && h !== '__v');
 
   return (
     <div className="dataviewer-container">
       
-      {/* --- NOVO FORMULÁRIO DE ADIÇÃO --- */}
+      {/* --- FORMULÁRIO DE ADIÇÃO (ATUALIZADO) --- */}
       <div className="add-form-container">
-        <h2>Adicionar Novo Contato</h2>
+        <h2>Adicionar Novo Registro</h2>
         <form onSubmit={handleAddSubmit}>
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="nome">Nome</label>
-              <input type="text" id="nome" name="nome" value={newContato.nome} onChange={handleFormChange} required />
+              <label htmlFor="Nome">Nome</label>
+              <input type="text" id="Nome" name="Nome" value={newContato.Nome} onChange={handleFormChange} required />
             </div>
             <div className="form-group">
               <label htmlFor="email">Email</label>
@@ -120,32 +112,33 @@ function ContatosViewer() {
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="telefone">Telefone</label>
-              <input type="tel" id="telefone" name="telefone" value={newContato.telefone} onChange={handleFormChange} />
+              <label htmlFor="password">Password</label>
+              {/* IMPORTANTE: type="password" para esconder a senha */}
+              <input type="password" id="password" name="password" value={newContato.password} onChange={handleFormChange} required />
             </div>
             <div className="form-group">
-              <label htmlFor="empresa">Empresa</label>
-              <input type="text" id="empresa" name="empresa" value={newContato.empresa} onChange={handleFormChange} />
+              <label htmlFor="manager">Manager</label>
+              <input type="text" id="manager" name="manager" value={newContato.manager} onChange={handleFormChange} />
             </div>
           </div>
-          <button type="submit">Adicionar Contato</button>
+          <button type="submit">Adicionar Registro</button>
         </form>
       </div>
 
       <hr />
 
-      {/* --- SEÇÃO DE CONSULTA (O que já existia) --- */}
-      <h2>Consulta à Base de Contatos</h2>
+      {/* --- SEÇÃO DE CONSULTA --- */}
+      <h2>Consulta à Base</h2>
       <input
         type="text"
-        placeholder="Buscar em contatos..."
+        placeholder="Buscar..."
         className="search-input"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
 
       {filteredData.length === 0 ? (
-        <p>Nenhum contato encontrado.</p>
+        <p>Nenhum dado encontrado.</p>
       ) : (
         <table>
           <thead>
