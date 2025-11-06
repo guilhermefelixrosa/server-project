@@ -4,6 +4,7 @@ const multer = require('multer');
 const xlsx = require('xlsx');
 const cors = require('cors');
 const path = require('path'); // Usaremos para servir o build do React
+const axios = require('axios');
 
 // --- Configuração Inicial ---
 const app = express();
