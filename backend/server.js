@@ -195,13 +195,13 @@ app.delete('/api/data/all', async (req, res) => {
     const deleteResult = await DataModel.deleteMany({}); 
     
     res.status(200).send({ 
-      message: 'Base de dados limpa com sucesso.', 
+      message: 'Base de dados de importados limpa com sucesso.', 
       deletedCount: deleteResult.deletedCount // Envia quantos foram deletados
     });
 
   } catch (error) {
-    console.error('Erro ao limpar a base de dados:', error);
-    res.status(500).send({ message: 'Erro ao limpar a base de dados', error: error.message });
+    console.error('Erro ao limpar a base de dados (datas):', error);
+    res.status(500).send({ message: 'Erro ao limpar a base de dados (datas)', error: error.message });
   }
 });
 

@@ -38,13 +38,13 @@ function FileUpload({ onUploadSuccess }) {
     }
   };
 
-  // --- NOVA FUNÇÃO ---
-  // Função para limpar a base de dados 'datas' (do Excel)
+  // --- FUNÇÃO CORRETA (Limpa apenas a 'primeira tabela') ---
   const handleClearDatabase = async () => {
-    // Adiciona uma dupla confirmação por ser uma ação perigosa
-    if (window.confirm('ATENÇÃO: Isso limpará TODOS os registros importados do Excel. Deseja continuar?')) {
+    // Adiciona uma dupla confirmação
+    if (window.confirm('ATENÇÃO: Isso limpará TODOS os registros importados do Excel (a primeira tabela). Deseja continuar?')) {
       if (window.confirm('Tem certeza absoluta? Esta ação não pode ser desfeita.')) {
         try {
+          // Chama apenas a rota para deletar os dados do Excel
           const response = await axios.delete(`${API_URL}/api/data/all`);
           
           // Mostra a mensagem de sucesso
@@ -59,7 +59,7 @@ function FileUpload({ onUploadSuccess }) {
       }
     }
   };
-  // --- FIM DA NOVA FUNÇÃO ---
+  // --- FIM DA FUNÇÃO ---
 
   return (
     <div className="upload-container">
@@ -70,7 +70,7 @@ function FileUpload({ onUploadSuccess }) {
       </form>
       {message && <p className="upload-status">{message}</p>}
 
-      {/* --- NOVO BOTÃO E SEÇÃO DE PERIGO --- */}
+      {/* --- SEÇÃO DE PERIGO (TEXTO CORRETO) --- */}
       <div className="danger-zone">
         <h2>Limpar Base (Importados)</h2>
         <p>
