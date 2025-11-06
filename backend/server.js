@@ -185,6 +185,26 @@ app.post('/api/contatos', async (req, res) => {
   }
 });
 
+// 7. ROTA PARA DELETAR TODOS OS REGISTROS DA COLEÇÃO 'datas'
+// (A coleção que vem do Excel)
+app.delete('/api/data/all', async (req, res) => {
+  console.log("Recebida requisição DELETE /api/data/all");
+  
+  try {
+    // Usa o DataModel para deletar tudo (filtro vazio {})
+    const deleteResult = await DataModel.deleteMany({}); 
+    
+    res.status(200).send({ 
+      message: 'Base de dados limpa com sucesso.', 
+      deletedCount: deleteResult.deletedCount // Envia quantos foram deletados
+    });
+
+  } catch (error) {
+    console.error('Erro ao limpar a base de dados:', error);
+    res.status(500).send({ message: 'Erro ao limpar a base de dados', error: error.message });
+  }
+});
+
 // --- Iniciar o Servidor ---
 app.listen(port, () => {
   console.log(`Servidor backend rodando em http://localhost:${port}`);

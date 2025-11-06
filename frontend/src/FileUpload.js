@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+
+// API URL (do Render ou localhost)
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 function FileUpload({ onUploadSuccess }) {
@@ -8,7 +10,7 @@ function FileUpload({ onUploadSuccess }) {
 
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
-    setMessage(''); // Limpa a mensagem ao selecionar novo arquivo
+    setMessage(''); 
   };
 
   const handleSubmit = async (event) => {
@@ -19,33 +21,70 @@ function FileUpload({ onUploadSuccess }) {
     }
 
     const formData = new FormData();
-    formData.append('file', selectedFile);
+    formData.append('file', selectedFile); 
 
     try {
-      // Use o seu endereço de backend
       const response = await axios.post(`${API_URL}/api/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       setMessage(`Sucesso! ${response.data.rows} linhas importadas.`);
-      onUploadSuccess(); // Chama a função para atualizar a lista
-      setSelectedFile(null); // Limpa o input
-      event.target.reset(); // Reseta o formulário
+      onUploadSuccess(); // Atualiza a tabela
+      setSelectedFile(null); 
+      event.target.reset(); 
     } catch (error) {
       setMessage('Erro no upload: ' + (error.response?.data?.message || error.message));
     }
   };
 
+  // --- NOVA FUNÇÃO ---
+  // Função para limpar a base de dados 'datas' (do Excel)
+  const handleClearDatabase = async () => {
+    // Adiciona uma dupla confirmação por ser uma ação perigosa
+    if (window.confirm('ATENÇÃO: Isso limpará TODOS os registros importados do Excel. Deseja continuar?')) {
+      if (window.confirm('Tem certeza absoluta? Esta ação não pode ser desfeita.')) {
+        try {
+          const response = await axios.delete(`${API_URL}/api/data/all`);
+          
+          // Mostra a mensagem de sucesso
+          setMessage(`${response.data.deletedCount} registros foram deletados com sucesso.`);
+          
+          // Chama a função de refresh (passada pelo App.js)
+          onUploadSuccess(); 
+
+        } catch (error) {
+          setMessage('Erro ao limpar a base de dados: ' + (error.response?.data?.message || error.message));
+        }
+      }
+    }
+  };
+  // --- FIM DA NOVA FUNÇÃO ---
+
   return (
     <div className="upload-container">
       <h2>Importar Planilha</h2>
       <form onSubmit={handleSubmit}>
-        {/* A CORREÇÃO ESTÁ AQUI: type="file" */}
         <input type="file" onChange={handleFileChange} accept=".xlsx, .xls, .csv" />
         <button type="submit">Enviar</button>
       </form>
       {message && <p className="upload-status">{message}</p>}
+
+      {/* --- NOVO BOTÃO E SEÇÃO DE PERIGO --- */}
+      <div className="danger-zone">
+        <h2>Limpar Base (Importados)</h2>
+        <p>
+          Isso deletará todos os dados da tabela "Dados Importados do Excel".
+          (Não afetará a "Consulta à Base de Contatos").
+        </p>
+        <button 
+          type="button" 
+          className="btn-delete" 
+          onClick={handleClearDatabase}
+        >
+          Limpar Base de Importados
+        </button>
+      </div>
     </div>
   );
 }

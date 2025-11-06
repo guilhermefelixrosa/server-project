@@ -237,3 +237,25 @@ tbody tr:hover {
 .add-form-container button[type="submit"] {
   align-self: flex-start; /* Alinha o botão à esquerda */
 }
+
+/* --- Estilos da Zona de Perigo --- */
+.danger-zone {
+  margin-top: 25px;
+  padding: 15px;
+  border: 1px solid #c94c4c; /* Vermelho do botão deletar */
+  border-radius: 8px;
+  background-color: #fff5f5; /* Um rosa bem claro */
+}
+
+.danger-zone h2 {
+  color: #c94c4c; /* Vermelho */
+  margin-top: 0;
+  border: none;
+  padding: 0;
+}
+
+.danger-zone p {
+  margin: 0 0 10px 0;
+  font-size: 0.9em;
+  color: #5E3C2B;
+}
