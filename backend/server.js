@@ -98,27 +98,7 @@ app.get('/api/data', async (req, res) => {
   }
 });
 
-// 3. Rota para DELETAR dados da coleção 'datas' (do Excel)
-app.delete('/api/data/:id', async (req, res) => {
-  const { id } = req.params;
-  console.log(`Recebida requisição DELETE /api/data/${id}`);
-  try {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).send({ message: 'ID inválido.' });
-    }
 
-    const deletedData = await DataModel.findByIdAndDelete(id);
-
-    if (!deletedData) {
-      return res.status(404).send({ message: 'Registro não encontrado.' });
-    }
-
-    res.status(200).send({ message: 'Registro deletado com sucesso.' });
-  } catch (error) {
-    console.error('Erro ao deletar registro:', error);
-    res.status(500).send({ message: 'Erro ao deletar o registro', error: error.message });
-  }
-});
 
 // 4. Rota para BUSCAR dados da coleção 'basecontatos'
 app.get('/api/contatos', async (req, res) => {
@@ -202,6 +182,28 @@ app.delete('/api/data/all', async (req, res) => {
   } catch (error) {
     console.error('Erro ao limpar a base de dados (datas):', error);
     res.status(500).send({ message: 'Erro ao limpar a base de dados (datas)', error: error.message });
+  }
+});
+
+// 3. Rota para DELETAR dados da coleção 'datas' (do Excel)
+app.delete('/api/data/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log(`Recebida requisição DELETE /api/data/${id}`);
+  try {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).send({ message: 'ID inválido.' });
+    }
+
+    const deletedData = await DataModel.findByIdAndDelete(id);
+
+    if (!deletedData) {
+      return res.status(404).send({ message: 'Registro não encontrado.' });
+    }
+
+    res.status(200).send({ message: 'Registro deletado com sucesso.' });
+  } catch (error) {
+    console.error('Erro ao deletar registro:', error);
+    res.status(500).send({ message: 'Erro ao deletar o registro', error: error.message });
   }
 });
 
