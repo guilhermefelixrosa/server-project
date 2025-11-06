@@ -26,21 +26,23 @@ mongoose.connect(MONGO_URI) // 4. Usar a variável
 
 // --- Definição dos Schemas e Modelos ---
 
-// 1. Schema para os dados do Excel (vai para a coleção 'datas')
+// 1. Schema para os dados do Excel (ATUALIZADO PARA OS CAMPOS DA GENESYS)
 const dataSchema = new mongoose.Schema({
-  Nome: String,
+  name: String,       // ANTES: 'Nome'
   email: String,
-  password: String, // Senha em texto puro
+  password: String,   // Senha em texto puro (como solicitado)
+  divisionId: String, // NOVO CAMPO
   manager: String
 }, { strict: false });
 
-const DataModel = mongoose.model('Data', dataSchema);
+const DataModel = mongoose.model('Data', dataSchema); // Coleção 'datas'
 
-// 2. Schema para a 'basecontatos'
+// 2. Schema para a 'basecontatos' (VOU ATUALIZAR ESTE TAMBÉM para manter a consistência)
 const contatoSchema = new mongoose.Schema({
-  Nome: String,
+  name: String,       // ANTES: 'Nome'
   email: String,
-  password: String, // Senha em texto puro
+  password: String,
+  divisionId: String, // NOVO CAMPO
   manager: String
 }, { 
   collection: 'basecontatos', 
@@ -53,6 +55,46 @@ const ContatoModel = mongoose.model('Contato', contatoSchema);
 // Usando armazenamento em memória para processar o arquivo sem salvar no disco
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+
+// --- LÓGICA DE AUTENTICAÇÃO DA GENESYS ---
+// (Já fizemos isso antes, mas vamos garantir que está correto)
+const GENESYS_CLIENT_ID = process.env.GENESYS_CLIENT_ID;
+const GENESYS_CLIENT_SECRET = process.env.GENESYS_CLIENT_SECRET;
+const GENESYS_API_REGION = process.env.GENESYS_API_REGION; // DEVE SER 'sae1.pure.cloud'
+
+const GENESYS_AUTH_URL = `https://login.${GENESYS_API_REGION}/oauth/token`;
+const GENESYS_API_URL = `https://api.${GENESYS_API_REGION}`;
+
+let genesysAuthToken = { token: null, expiresAt: 0 };
+
+async function getGenesysToken() {
+  if (genesysAuthToken.token && genesysAuthToken.expiresAt > Date.now() + 300000) {
+    console.log('Reutilizando token da Genesys em cache.');
+    return genesysAuthToken.token;
+  }
+  console.log('Solicitando novo token da Genesys...');
+  try {
+    const credentials = Buffer.from(`${GENESYS_CLIENT_ID}:${GENESYS_CLIENT_SECRET}`).toString('base64');
+    const response = await axios.post(GENESYS_AUTH_URL, 
+      'grant_type=client_credentials',
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Basic ${credentials}`
+        }
+      }
+    );
+    const tokenData = response.data;
+    genesysAuthToken.token = tokenData.access_token;
+    genesysAuthToken.expiresAt = Date.now() + (tokenData.expires_in * 1000); 
+    console.log('Novo token da Genesys obtido.');
+    return genesysAuthToken.token;
+  } catch (error) {
+    console.error('Erro ao obter token da Genesys:', error.response ? error.response.data : error.message);
+    throw new Error('Falha na autenticação com a Genesys');
+  }
+}
+// --- FIM DA LÓGICA DE AUTENTICAÇÃO ---
 
 // --- ROTAS DA API ---
 
@@ -204,6 +246,88 @@ app.delete('/api/data/:id', async (req, res) => {
   } catch (error) {
     console.error('Erro ao deletar registro:', error);
     res.status(500).send({ message: 'Erro ao deletar o registro', error: error.message });
+  }
+});
+
+// --- NOVA ROTA DE UPLOAD PARA O GENESYS ---
+app.post('/api/genesys/upload-contacts', async (req, res) => {
+  console.log('Recebida requisição POST /api/genesys/upload-contacts');
+  let token;
+  try {
+    // 1. Obter o token de autenticação
+    token = await getGenesysToken();
+  } catch (authError) {
+    console.error('Erro de autenticação Genesys:', authError);
+    return res.status(500).send({ message: 'Falha ao autenticar com a Genesys Cloud.' });
+  }
+
+  try {
+    // 2. Buscar todos os contatos do banco de dados (da tabela do Excel 'datas')
+    const contatosDoDB = await DataModel.find({});
+    if (contatosDoDB.length === 0) {
+      return res.status(404).send({ message: 'Nenhum contato encontrado no banco de dados para enviar.' });
+    }
+    console.log(`Encontrados ${contatosDoDB.length} contatos para enviar.`);
+
+    // 3. Preparar as chamadas de API (em paralelo)
+    const promisesDeCriacao = contatosDoDB.map(contato => {
+      
+      // Mapeia os dados do banco para o formato da API da Genesys
+      const genesysUserData = {
+        name: contato.name,
+        email: contato.email,
+        password: contato.password, // Enviando senha em texto puro, como solicitado
+        divisionId: contato.divisionId,
+        manager: contato.manager
+      };
+
+      // Retorna a promessa da chamada da API
+      return axios.post(`${GENESYS_API_URL}/api/v2/users`, 
+        genesysUserData, 
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+    });
+
+    // 4. Executar todas as promessas e aguardar os resultados
+    // Usamos 'allSettled' para que, se um falhar, os outros continuem.
+    const resultados = await Promise.allSettled(promisesDeCriacao);
+
+    // 5. Processar os resultados
+    let sucessos = 0;
+    let falhas = 0;
+    const errosDetalhados = [];
+
+    resultados.forEach((resultado, index) => {
+      if (resultado.status === 'fulfilled') {
+        sucessos++;
+      } else {
+        falhas++;
+        const erroMsg = resultado.reason.response ? resultado.reason.response.data : resultado.reason.message;
+        errosDetalhados.push({ 
+          email: contatosDoDB[index].email, 
+          erro: erroMsg 
+        });
+      }
+    });
+
+    console.log(`Resultado do lote: ${sucessos} sucessos, ${falhas} falhas.`);
+
+    // 6. Enviar a resposta final para o frontend
+    res.status(200).send({
+      message: `Processamento concluído: ${sucessos} usuários criados na Genesys, ${falhas} falhas.`,
+      sucessos,
+      falhas,
+      errosDetalhados
+    });
+
+  } catch (error) {
+    console.error('Erro durante o processamento do lote:', error);
+    res.status(500).send({ message: 'Erro interno ao processar o lote.', error: error.message });
   }
 });
 

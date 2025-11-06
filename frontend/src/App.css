@@ -259,3 +259,49 @@ tbody tr:hover {
   font-size: 0.9em;
   color: #5E3C2B;
 }
+
+/* ... (todos os seus estilos anteriores) ... */
+
+/* --- Estilos da Zona de Upload Genesys --- */
+.genesys-upload-zone {
+  margin-top: 25px;
+  padding: 15px;
+  border: 1px solid #0073e6; /* Azul Genesys */
+  border-radius: 8px;
+  background-color: #f0f8ff; /* Azul claro */
+}
+
+.genesys-upload-zone h2 {
+  color: #0073e6;
+  margin-top: 0;
+  border: none;
+  padding: 0;
+}
+
+.genesys-upload-zone p {
+  margin: 0 0 10px 0;
+  font-size: 0.9em;
+  color: #5E3C2B;
+}
+
+/* Botão Genesys */
+.btn-genesys {
+  background-color: #0073e6; /* Azul Genesys */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-genesys:hover {
+  background-color: #005aa3; /* Azul mais escuro */
+}
+
+.btn-genesys:disabled {
+  background-color: #a0a0a0;
+  cursor: not-allowed;
+}
